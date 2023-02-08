@@ -174,12 +174,21 @@ jobs:
           echo "ASSET=$staging.tar.gz" >> $GITHUB_ENV
         fi
 
-    - name: Upload release archive
-      uses: actions/upload-release-asset@v1.0.2
+#    - name: Upload release archive
+#      uses: actions/upload-release-asset@v1.0.2
 #      env:
 #        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#      with:
+#        upload_url: ${{ needs.create-release.outputs.upload_url }}
+#        asset_path: ${{ env.ASSET }}
+#        asset_name: ${{ env.ASSET }}
+#        asset_content_type: application/octet-stream
+
+    - name: Publish Release
+      uses: deep-soft/action-gh-release@v1
       with:
-        upload_url: ${{ needs.create-release.outputs.upload_url }}
-        asset_path: ${{ env.ASSET }}
-        asset_name: ${{ env.ASSET }}
-        asset_content_type: application/octet-stream
+        prerelease: true
+        tag_name: ${{ env.TAG_NAME }}
+        files: |
+          ${{ env.ASSET }}/*
+#           ${{ github.event.repository.name }}.zip
