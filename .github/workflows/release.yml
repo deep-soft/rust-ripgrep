@@ -179,7 +179,7 @@ jobs:
         ls -l "$staging/"
         echo Current folder:        
         ls -l
-        echo find asset
+        echo find asset: ${{ env.ASSET }}
         find . -name ${{ env.ASSET }}
 
 #    - name: Upload release archive
