@@ -24,8 +24,8 @@ on:
 #    - "[0-9]+.[0-9]+.[0-9]+"
 env:
   # Set to force version number, e.g., when no tag exists.
-  RG_VERSION: v-13.0.1
-  TAG_NAME: v-13.0.1
+  RG_VERSION: v13.0.1
+  TAG_NAME: v13.0.1
 
 jobs:
 #  create-release:
