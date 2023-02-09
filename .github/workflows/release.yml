@@ -180,8 +180,8 @@ jobs:
         echo Current folder:
         pwd
         ls -l
-        echo find asset: $ASSET
-        find . -name $ASSET
+        echo find asset: $staging.tar.gz
+        find . -name $staging.tar.gz
 
 #    - name: Upload release archive
 #      uses: actions/upload-release-asset@v1.0.2
