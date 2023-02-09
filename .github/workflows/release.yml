@@ -191,5 +191,5 @@ jobs:
         prerelease: true
         tag_name: ${{ env.TAG_NAME }}
         files: |
-          ${{ env.ASSET }}/*
+          ${{ env.ASSET }}
 #           ${{ github.event.repository.name }}.zip
