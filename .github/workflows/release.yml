@@ -180,7 +180,7 @@ jobs:
         echo Current folder:        
         ls -l
         echo find asset
-        find . -name $ASSET
+        find . -name ${{ env.ASSET }}
 
 #    - name: Upload release archive
 #      uses: actions/upload-release-asset@v1.0.2
