@@ -177,10 +177,11 @@ jobs:
         fi
         echo Staging:
         ls -l "$staging/"
-        echo Current folder:        
+        echo Current folder:
+        pwd
         ls -l
-        echo find asset: ${{ env.ASSET }}
-        find . -name ${{ env.ASSET }}
+        echo find asset: $ASSET
+        find . -name $ASSET
 
 #    - name: Upload release archive
 #      uses: actions/upload-release-asset@v1.0.2
