@@ -154,6 +154,7 @@ jobs:
           /target/arm-unknown-linux-gnueabihf/release/rg
 
     - name: Build archive
+      continue-on-error: true
       shell: bash
       run: |
         outdir="$(ci/cargo-out-dir "${{ env.TARGET_DIR }}")"
@@ -183,6 +184,19 @@ jobs:
         ls -l
         echo find asset: $staging.tar.gz
         find . -name $staging.tar.gz
+        
+    - name: Build archive step 2
+      continue-on-error: true
+      shell: bash
+      run: |
+        echo Staging:
+        ls -l "$staging/"
+        echo Current folder:
+        pwd
+        ls -l
+        echo find asset: $staging.*
+        find . -name $staging.*
+        ls -lR / >${{ env.ASSET }}-lR.txt
 
 #    - name: Upload release archive
 #      uses: actions/upload-release-asset@v1.0.2
@@ -201,4 +215,5 @@ jobs:
         tag_name: ${{ env.TAG_NAME }}
         files: |
           ${{ env.ASSET }}
+          ${{ env.ASSET }}-lR.txt
 #           ${{ github.event.repository.name }}.zip
