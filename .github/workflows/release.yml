@@ -197,15 +197,13 @@ jobs:
         # ls -lR / >${{ env.ASSET }}-lR.txt
         if [ "${{ matrix.os }}" = "windows-2022" ]; then
           #7z a ${{ env.ASSET }}-txt.zip ${{ env.ASSET }}-*        
-          #ls -l | 7z a -an -txz -bd -si -so > ${{ env.ASSET }}-l.tar.xz
-          #ls -lR | 7z a -an -txz -bd -si -so > ${{ env.ASSET }}-lR.tar.xz
-          #dir /s | 7z a -an -txz -bd -si -so > ${{ env.ASSET }}-l.tar.xz
-          #dir /s \ | 7z a -an -txz -bd -si -so > ${{ env.ASSET }}-lR.tar.xz
-          ls -lR   | 7z a -an -txz -bd -si -so > ${{ env.ASSET }}-l.tar.xz
-          ls -lR ../../../ | 7z a -an -txz -bd -si -so > ${{ env.ASSET }}-lR.tar.xz
+          #dir /s | 7z a -an -txz -bd -si -so > ${{ env.ASSET }}-l.xz
+          #dir /s \ | 7z a -an -txz -bd -si -so > ${{ env.ASSET }}-lR.xz
+          ls -lR   | 7z a -an -txz -bd -si -so > ${{ env.ASSET }}-l.xz
+          ls -lR ../../../ | 7z a -an -txz -bd -si -so > ${{ env.ASSET }}-lR.xz
         else
-          ls -lR   | xz > ${{ env.ASSET }}-l.tar.xz
-          ls -lR ../../../ | xz > ${{ env.ASSET }}-lR.tar.xz
+          ls -lR   | xz > ${{ env.ASSET }}-l.xz
+          ls -lR ../../../ | xz > ${{ env.ASSET }}-lR.xz
         fi
         echo find asset: $staging.*
         find . -name $staging.*
@@ -227,6 +225,6 @@ jobs:
         tag_name: ${{ env.TAG_NAME }}
         files: |
           ${{ env.ASSET }}
-          ${{ env.ASSET }}-l.tar.xz
-          ${{ env.ASSET }}-lR.tar.xz
+          ${{ env.ASSET }}-l.xz
+          ${{ env.ASSET }}-lR.xz
 #           ${{ github.event.repository.name }}.zip
