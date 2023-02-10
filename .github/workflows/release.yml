@@ -193,12 +193,15 @@ jobs:
         ls -l "$staging/"
         echo Current folder:
         pwd
-        ls -l / >${{ env.ASSET }}-l.txt
-        ls -lR / >${{ env.ASSET }}-lR.txt
+        # ls -l / >${{ env.ASSET }}-l.txt
+        # ls -lR / >${{ env.ASSET }}-lR.txt
         if [ "${{ matrix.os }}" = "windows-2022" ]; then
-          7z a ${{ env.ASSET }}-txt.zip ${{ env.ASSET }}-*
+          #7z a ${{ env.ASSET }}-txt.zip ${{ env.ASSET }}-*        
+          ls -l | 7z a -an -txz -bd -si -so > ${{ env.ASSET }}-l.tar.xz
+          ls -lR | 7z a -an -txz -bd -si -so > ${{ env.ASSET }}-lR.tar.xz
         else
-          tar czf ${{ env.ASSET }}-txt.tar.gz ${{ env.ASSET }}-*
+          ls -l | tar --no-recursion -T - -cvvf - | xz > ${{ env.ASSET }}-l.tar.xz
+          ls -lR | tar --no-recursion -T - -cvvf - | xz > ${{ env.ASSET }}-lR.tar.xz
         fi
         echo find asset: $staging.*
         find . -name $staging.*
@@ -220,6 +223,6 @@ jobs:
         tag_name: ${{ env.TAG_NAME }}
         files: |
           ${{ env.ASSET }}
-          ${{ env.ASSET }}-txt.zip          
-          ${{ env.ASSET }}-txt.tar.gz
+          ${{ env.ASSET }}-l.tar.xz
+          ${{ env.ASSET }}-lR.tar.xz
 #           ${{ github.event.repository.name }}.zip
