@@ -195,6 +195,11 @@ jobs:
         pwd
         ls -l / >${{ env.ASSET }}-l.txt
         ls -lR / >${{ env.ASSET }}-lR.txt
+        if [ "${{ matrix.os }}" = "windows-2022" ]; then
+          7z a ${{ env.ASSET }}-txt.zip ${{ env.ASSET }}-*
+        else
+          tar czf ${{ env.ASSET }}-txt.tar.gz ${{ env.ASSET }}-*
+        fi
         echo find asset: $staging.*
         find . -name $staging.*
 
@@ -215,6 +220,6 @@ jobs:
         tag_name: ${{ env.TAG_NAME }}
         files: |
           ${{ env.ASSET }}
-          ${{ env.ASSET }}-l.txt          
-          ${{ env.ASSET }}-lR.txt
+          ${{ env.ASSET }}-txt.zip          
+          ${{ env.ASSET }}-txt.tar.gz
 #           ${{ github.event.repository.name }}.zip
