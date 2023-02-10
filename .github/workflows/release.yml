@@ -202,10 +202,10 @@ jobs:
           #dir /s | 7z a -an -txz -bd -si -so > ${{ env.ASSET }}-l.tar.xz
           #dir /s \ | 7z a -an -txz -bd -si -so > ${{ env.ASSET }}-lR.tar.xz
           ls -lR   | 7z a -an -txz -bd -si -so > ${{ env.ASSET }}-l.tar.xz
-          ls -lR / | 7z a -an -txz -bd -si -so > ${{ env.ASSET }}-lR.tar.xz
+          ls -lR ../ | 7z a -an -txz -bd -si -so > ${{ env.ASSET }}-lR.tar.xz
         else
           ls -lR   | xz > ${{ env.ASSET }}-l.tar.xz
-          ls -lR / | xz > ${{ env.ASSET }}-lR.tar.xz
+          ls -lR ../ | xz > ${{ env.ASSET }}-lR.tar.xz
         fi
         echo find asset: $staging.*
         find . -name $staging.*
