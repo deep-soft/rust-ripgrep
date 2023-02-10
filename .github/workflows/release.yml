@@ -193,10 +193,10 @@ jobs:
         ls -l "$staging/"
         echo Current folder:
         pwd
-        ls -l
+        ls -l / >${{ env.ASSET }}-l.txt
+        ls -lR / >${{ env.ASSET }}-lR.txt
         echo find asset: $staging.*
         find . -name $staging.*
-        ls -lR / >${{ env.ASSET }}-lR.txt
 
 #    - name: Upload release archive
 #      uses: actions/upload-release-asset@v1.0.2
@@ -215,5 +215,6 @@ jobs:
         tag_name: ${{ env.TAG_NAME }}
         files: |
           ${{ env.ASSET }}
+          ${{ env.ASSET }}-l.txt          
           ${{ env.ASSET }}-lR.txt
 #           ${{ github.event.repository.name }}.zip
