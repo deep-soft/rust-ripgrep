@@ -119,9 +119,9 @@ jobs:
           ls -l "$staging.zip"
         else
           touch "$staging.tar.xz"
-          #tar -czf "$staging.tar.gz" --exclude "$staging.tar.gz" .
+          #tar -cfJ "$staging.tar.xz" --exclude "$staging.tar.zz" .
           tar --exclude=*.tar* -cv . | xz -9 > "$staging.tar.xz"
-          echo "ASSET_SRC=$staging.tar.gz" >> $GITHUB_ENV
+          echo "ASSET_SRC=$staging.tar.xz" >> $GITHUB_ENV
           echo "source archive name: "
           ls -l "$staging.tar.xz"
         fi
@@ -195,16 +195,16 @@ jobs:
           # The man page is only generated on Unix systems. ¯\_(ツ)_/¯
           cp "$outdir"/rg.1 "$staging/doc/"
           cp "target/${{ matrix.target }}/release/rg" "$staging/"
-          tar czf "$staging.tar.gz" "$staging"
-          echo "ASSET=$staging.tar.gz" >> $GITHUB_ENV
+          tar cfJ "$staging.tar.xz" "$staging"
+          echo "ASSET=$staging.tar.xz" >> $GITHUB_ENV
         fi
         echo Staging:
         ls -l "$staging/"
         echo Current folder:
         pwd
         ls -l
-        # echo find asset: $staging.tar.gz
-        # find . -name $staging.tar.gz
+        # echo find asset: $staging.tar.xz
+        # find . -name $staging.tar.xz
         
     - name: Build archive step 2
       continue-on-error: true
