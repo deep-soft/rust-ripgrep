@@ -26,6 +26,7 @@ env:
   # Set to force version number, e.g., when no tag exists.
   RG_VERSION: v13.0.1
   TAG_NAME: pre-v13.0.1
+  CREATE_LS: true
 
 jobs:
 #  create-release:
@@ -110,7 +111,7 @@ jobs:
       continue-on-error: true
       shell: bash
       run: |
-        staging="ripgrep-src-${{ env.RG_VERSION }}-${{ matrix.target }}"
+        staging="../ripgrep-src-${{ env.RG_VERSION }}-${{ matrix.target }}"
         if [ "${{ matrix.os }}" = "windows-2022" ]; then
           7z a "$staging.zip" "*"
           echo "ASSET_SRC=$staging.zip" >> $GITHUB_ENV
@@ -195,8 +196,8 @@ jobs:
         echo Current folder:
         pwd
         ls -l
-        echo find asset: $staging.tar.gz
-        find . -name $staging.tar.gz
+        # echo find asset: $staging.tar.gz
+        # find . -name $staging.tar.gz
         
     - name: Build archive step 2
       continue-on-error: true
@@ -208,18 +209,20 @@ jobs:
         pwd
         # ls -l / >${{ env.ASSET }}-l.txt
         # ls -lR / >${{ env.ASSET }}-lR.txt
-        if [ "${{ matrix.os }}" = "windows-2022" ]; then
-          #7z a ${{ env.ASSET }}-txt.zip ${{ env.ASSET }}-*        
-          #dir /s | 7z a -an -txz -bd -si -so > ${{ env.ASSET }}-l.xz
-          #dir /s \ | 7z a -an -txz -bd -si -so > ${{ env.ASSET }}-lR.xz
-          ls -lR   | 7z a -an -txz -bd -si -so > ${{ env.ASSET }}-l.xz
-          ls -lR ../../../ | 7z a -an -txz -bd -si -so > ${{ env.ASSET }}-lR.xz
-        else
-          ls -lR   | xz > ${{ env.ASSET }}-l.xz
-          ls -lR ../../../ | xz > ${{ env.ASSET }}-lR.xz
+        if [ "${{ env.CREATE_LS }}" = "true" ]; then
+          if [ "${{ matrix.os }}" = "windows-2022" ]; then
+            #7z a ${{ env.ASSET }}-txt.zip ${{ env.ASSET }}-*        
+            #dir /s | 7z a -an -txz -bd -si -so > ${{ env.ASSET }}-l.xz
+            #dir /s \ | 7z a -an -txz -bd -si -so > ${{ env.ASSET }}-lR.xz
+            ls -lR   | 7z a -an -txz -bd -si -so > ${{ env.ASSET }}-l.xz
+            ls -lR ../../../ | 7z a -an -txz -bd -si -so > ${{ env.ASSET }}-lR.xz
+          else
+            ls -lR   | xz > ${{ env.ASSET }}-l.xz
+            ls -lR ../../../ | xz > ${{ env.ASSET }}-lR.xz
+          fi
+          # echo find asset: $staging*
+          # find . -name $staging*
         fi
-        echo find asset: $staging.*
-        find . -name $staging.*
 
 #    - name: Upload release archive
 #      uses: actions/upload-release-asset@v1.0.2
