@@ -115,12 +115,17 @@ jobs:
         if [ "${{ matrix.os }}" = "windows-2022" ]; then
           7z a "$staging.zip" "*"
           echo "ASSET_SRC=$staging.zip" >> $GITHUB_ENV
+          echo "source archive name:"
+          ls -l "$staging.zip"
         else
           touch "$staging.tar.xz"
           #tar -czf "$staging.tar.gz" --exclude "$staging.tar.gz" .
           tar --exclude=*.tar* -cv . | xz -9 > "$staging.tar.xz"
           echo "ASSET_SRC=$staging.tar.gz" >> $GITHUB_ENV
+          echo "source archive name: "
+          ls -l "$staging.tar.xz"
         fi
+        ls -l ${{ env.ASSET_SRC }} 
 
     - name: Install packages (Ubuntu)
       if: matrix.os == 'ubuntu-22.04'
