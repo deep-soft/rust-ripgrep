@@ -115,7 +115,7 @@ jobs:
           7z a "$staging.zip" "*"
           echo "ASSET_SRC=$staging.zip" >> $GITHUB_ENV
         else
-          tar czf "$staging.tar.gz" "*"
+          tar czf "$staging.tar.gz" "./"
           echo "ASSET_SRC=$staging.tar.gz" >> $GITHUB_ENV
         fi
 
