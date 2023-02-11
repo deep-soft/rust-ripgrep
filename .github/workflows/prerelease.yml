@@ -13,7 +13,7 @@
 # Reference:
 # https://eugene-babichenko.github.io/blog/2020/05/09/github-actions-cross-platform-auto-releases/
 
-name: release
+name: pre-release
 on:
   workflow_dispatch:
 #  push:
@@ -25,7 +25,7 @@ on:
 env:
   # Set to force version number, e.g., when no tag exists.
   RG_VERSION: v13.0.1
-  TAG_NAME: v13.0.1
+  TAG_NAME: pre-v13.0.1
 
 jobs:
 #  create-release:
