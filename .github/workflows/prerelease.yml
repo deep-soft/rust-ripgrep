@@ -106,6 +106,19 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
+    - name: Create source archive
+      continue-on-error: true
+      shell: bash
+      run: |
+        staging="ripgrep-src-${{ env.RG_VERSION }}-${{ matrix.target }}"
+        if [ "${{ matrix.os }}" = "windows-2022" ]; then
+          7z a "$staging.zip" "*"
+          echo "ASSET_SRC=$staging.zip" >> $GITHUB_ENV
+        else
+          tar czf "$staging.tar.gz" "*"
+          echo "ASSET_SRC=$staging.tar.gz" >> $GITHUB_ENV
+        fi
+
     - name: Install packages (Ubuntu)
       if: matrix.os == 'ubuntu-22.04'
       run: |
@@ -225,6 +238,7 @@ jobs:
         tag_name: ${{ env.TAG_NAME }}
         files: |
           ${{ env.ASSET }}
+          ${{ env.ASSET_SRC }}
           ${{ env.ASSET }}-l.xz
           ${{ env.ASSET }}-lR.xz
 #           ${{ github.event.repository.name }}.zip
