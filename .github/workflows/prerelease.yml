@@ -14,15 +14,15 @@ on:
         default: false
         required: false
 
-# We need this to be able to create releases.
-permissions:
-  contents: write
-
 env:
   # Set to force version number, e.g., when no tag exists.
   RG_VERSION: v13.0.1
   TAG_NAME: pre-v13.0.1
   #CREATE_LS: true
+
+# We need this to be able to create releases.
+permissions:
+  contents: write
 
 jobs:
   # The create-release job runs purely to initialize the GitHub release itself,
