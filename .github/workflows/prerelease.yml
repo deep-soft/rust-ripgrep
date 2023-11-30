@@ -3,10 +3,10 @@ name: pre-release
 
 # Only do the release on x.y.z tags.
 on:
-  workflow_dispatch:
 #  push:
 #    tags:
 #    - "[0-9]+.[0-9]+.[0-9]+"
+  workflow_dispatch:
     inputs:
       CREATE_LS:
         description: Create list (.ls)
