@@ -1,0 +1,286 @@
+# 2023-08-29 15:50
+# The following comment does not apply; create release changed
+#
+# The way this works is the following:
+#
+# The create-release job runs purely to initialize the GitHub release itself
+# and to output upload_url for the following job.
+#
+# The build-release job runs only once create-release is finished. It gets the
+# release upload URL from create-release job outputs, then builds the release
+# executables for each supported platform and attaches them as release assets
+# to the previously created release.
+#
+# The key here is that we create the release only once.
+#
+# Reference:
+# https://eugene-babichenko.github.io/blog/2020/05/09/github-actions-cross-platform-auto-releases/
+
+name: pre-release
+on:
+  workflow_dispatch:
+#  push:
+#    # Enable when testing release infrastructure on a branch.
+#    # branches:
+#    # - ag/work
+#    tags:
+#    - "[0-9]+.[0-9]+.[0-9]+"
+    inputs:
+      CREATE_LS:
+        description: Create list (.ls)
+        type: boolean
+        default: false
+        required: false
+env:
+  # Set to force version number, e.g., when no tag exists.
+  RG_VERSION: v13.0.1
+  TAG_NAME: pre-v13.0.1
+  #CREATE_LS: true
+
+jobs:
+#  create-release:
+#    name: create-release
+#    runs-on: ubuntu-latest
+#    # env:
+#      # Set to force version number, e.g., when no tag exists.
+#      # RG_VERSION: TEST-0.0.0
+#    outputs:
+#      rg_version: ${{ env.RG_VERSION }}
+#    steps:
+#      - uses: deep-soft/checkout@v3
+#      - name: Get the release version from the tag
+#        shell: bash
+#        if: env.RG_VERSION == ''
+#        run: |
+#          echo "RG_VERSION=$GITHUB_REF_NAME" >> $GITHUB_ENV
+#          echo "version is: ${{ env.RG_VERSION }}"
+#      - name: Create GitHub release
+#        env:
+#          GH_TOKEN: ${{ github.token }}
+#        run: gh release create ${{ env.RG_VERSION }}
+
+  build-release:
+    name: build-release
+#    needs: ['create-release']
+    runs-on: ${{ matrix.os }}
+    env:
+      # For some builds, we use cross to test on 32-bit and big-endian
+      # systems.
+      CARGO: cargo
+      # When CARGO is set to CROSS, this is set to `--target matrix.target`.
+      TARGET_FLAGS: ""
+      # When CARGO is set to CROSS, TARGET_DIR includes matrix.target.
+      TARGET_DIR: ./target
+      # Emit backtraces on panics.
+      RUST_BACKTRACE: 1
+      # Build static releases with PCRE2.
+      PCRE2_SYS_STATIC: 1
+    strategy:
+      matrix:
+#        build: [linux, linux-arm, macos, win-msvc, win-gnu, win32-msvc]
+        build: [linux, linux-arm, macos, win-msvc, win32-msvc]
+        include:
+        - build: linux
+          os: ubuntu-22.04
+          rust: nightly
+          target: x86_64-unknown-linux-musl
+        - build: linux-arm
+          os: ubuntu-22.04
+          rust: nightly
+          target: arm-unknown-linux-gnueabihf
+        - build: macos
+          os: macos-12
+          rust: nightly
+          target: x86_64-apple-darwin
+        - build: win-msvc
+          os: windows-2022
+          rust: nightly
+          target: x86_64-pc-windows-msvc
+#        - build: win-gnu
+#          os: windows-2022
+#          rust: nightly-x86_64-gnu
+#          target: x86_64-pc-windows-gnu
+        - build: win32-msvc
+          os: windows-2022
+          rust: nightly
+          target: i686-pc-windows-msvc
+
+    steps:
+    - name: Checkout repository
+      uses: deep-soft/checkout@v3
+
+## -- read from toml - begin
+    - name: Read toml package.version
+      uses: deep-soft/toml-action@v1.0.2
+      id: read_toml_version
+      with:
+        file: 'Cargo.toml'
+        field: 'package.version'
+
+    - name: Set env.PROG_VERSION
+      shell: bash
+      run: |
+        echo "PROG_VERSION = ${{ env.PROG_VERSION }}";
+        echo "set PROG_VERSION with value from Cargo.toml";
+        _version_=${{ steps.read_toml_version.outputs.value }};
+        prog_version="v"$_version_;
+        echo "PROG_VERSION = $prog_version";
+        echo "TAG_VERSION=${{ env.PROG_NAME }}-$prog_version";
+        echo "set env.PROG_VERSION with value from Cargo.toml";
+        echo "PROG_VERSION=$prog_version" >> $GITHUB_ENV;
+        echo "VERSION=$_version_" >> $GITHUB_ENV;
+    - name: Print env.PROG_VERSION
+      shell: bash
+      run: |
+        echo "show new value for env.PROG_VERSION";
+        echo "PROG_VERSION = ${{ env.PROG_VERSION }}";
+## -- read from toml - end
+
+    - name: set RG_VERSION
+      shell: bash
+      run: |
+        if [ "${{ env.PROG_VERSION }}" gt "${{ env.RG_VERSION }}" ]; then
+          RG_VERSION=${{ env.PROG_VERSION }};
+          echo "RG_VERSION=$RG_VERSION" >> $GITHUB_ENV;
+        fi;
+    - name: Print env.PROG_VERSION
+      shell: bash
+      run: |
+        echo "show new value for env.RG_VERSION"
+        echo "RG_VERSION = ${{ env.RG_VERSION }}"
+    - name: Create source archive
+      continue-on-error: true
+      shell: bash
+      run: |
+        staging="ripgrep-src-${{ env.RG_VERSION }}-${{ matrix.target }}"
+        if [ "${{ matrix.os }}" = "windows-2022" ]; then
+          7z a "$staging.zip" "*"
+          echo "ASSET_SRC=$staging.zip" >> $GITHUB_ENV
+          echo "source archive name:"
+          ls -l "$staging.zip"
+        else
+          touch "$staging.tar.xz"
+          #tar -cfJ "$staging.tar.xz" --exclude "$staging.tar.zz" .
+          tar --exclude=*.tar* -cv . | xz -9 > "$staging.tar.xz"
+          echo "ASSET_SRC=$staging.tar.xz" >> $GITHUB_ENV
+          echo "source archive name: "
+          ls -l "$staging.tar.xz"
+        fi
+        ls -l ${{ env.ASSET_SRC }} 
+    - name: Install packages (Ubuntu)
+      if: matrix.os == 'ubuntu-22.04'
+      run: |
+        ci/ubuntu-install-packages
+    - name: Install packages (macOS)
+      if: matrix.os == 'macos-12'
+      run: |
+        ci/macos-install-packages
+    - name: Install Rust
+#      uses: dtolnay/rust-toolchain@master
+#      uses: deep-soft/rust-toolchain-dtolnay@master
+      uses: deep-soft/rust-toolchain-actions-rs@v2
+      with:
+        toolchain: ${{ matrix.rust }}
+        target: ${{ matrix.target }}
+        profile: minimal # minimal component installation (ie, no documentation)
+
+    - name: Use Cross
+      shell: bash
+      run: |
+        cargo install cross
+        echo "CARGO=cross" >> $GITHUB_ENV
+        echo "TARGET_FLAGS=--target ${{ matrix.target }}" >> $GITHUB_ENV
+        echo "TARGET_DIR=./target/${{ matrix.target }}" >> $GITHUB_ENV
+    - name: Show command used for Cargo
+      run: |
+        echo "cargo command is: ${{ env.CARGO }}"
+        echo "target flag is: ${{ env.TARGET_FLAGS }}"
+        echo "target dir is: ${{ env.TARGET_DIR }}"
+    - name: Build release binary
+      run: ${{ env.CARGO }} build --verbose --release --features pcre2 ${{ env.TARGET_FLAGS }}
+
+    - name: Strip release binary (linux, macos and macos-arm)
+      if: matrix.build == 'linux' || matrix.os == 'macos'
+      run: strip "target/${{ matrix.target }}/release/rg"
+
+    - name: Strip release binary (arm)
+      if: matrix.build == 'linux-arm'
+      run: |
+        docker run --rm -v \
+          "$PWD/target:/target:Z" \
+          rustembedded/cross:arm-unknown-linux-gnueabihf \
+          arm-linux-gnueabihf-strip \
+          /target/arm-unknown-linux-gnueabihf/release/rg
+    - name: Build archive
+      continue-on-error: true
+      shell: bash
+      run: |
+        outdir="$(ci/cargo-out-dir "${{ env.TARGET_DIR }}")"
+        staging="ripgrep-${{ needs.create-release.outputs.rg_version }}-${{ matrix.target }}"
+        mkdir -p "$staging"/{complete,doc}
+        cp {README.md,COPYING,UNLICENSE,LICENSE-MIT} "$staging/"
+        cp {CHANGELOG.md,FAQ.md,GUIDE.md} "$staging/doc/"
+        cp "$outdir"/{rg.bash,rg.fish,_rg.ps1} "$staging/complete/"
+        cp complete/_rg "$staging/complete/"
+        if [ "${{ matrix.os }}" = "windows-2022" ]; then
+          cp "target/${{ matrix.target }}/release/rg.exe" "$staging/"
+          7z a "$staging.zip" "$staging"
+          certutil -hashfile "$staging.zip" SHA256 > "$staging.zip.sha256"
+          echo "ASSET=$staging.zip" >> $GITHUB_ENV
+          echo "ASSET_SUM=$staging.zip.sha256" >> $GITHUB_ENV
+        else
+          # The man page is only generated on Unix systems. ¯\_(ツ)_/¯
+          cp "$outdir"/rg.1 "$staging/doc/"
+          cp "target/${{ matrix.target }}/release/rg" "$staging/"
+          tar czf "$staging.tar.gz" "$staging"
+          shasum -a 256 "$staging.tar.gz" > "$staging.tar.gz.sha256"
+          echo "ASSET=$staging.tar.gz" >> $GITHUB_ENV
+          echo "ASSET_SUM=$staging.tar.gz.sha256" >> $GITHUB_ENV
+        fi
+        echo Staging:
+        ls -l "$staging/"
+        echo Current folder:
+        pwd
+        ls -l
+        # echo find asset: $staging.tar.xz
+        # find . -name $staging.tar.xz
+    - name: Build archive step 2
+      continue-on-error: true
+      shell: bash
+      run: |
+        echo Staging:
+        ls -l "$staging/"
+        echo Current folder:
+        pwd
+        # ls -l / >${{ env.ASSET }}-l.txt
+        # ls -lR / >${{ env.ASSET }}-lR.txt
+        if [ "${{ inputs.CREATE_LS }}" = "true" ]; then
+          if [ "${{ matrix.os }}" = "windows-2022" ]; then
+            #7z a ${{ env.ASSET }}-txt.zip ${{ env.ASSET }}-*        
+            #dir /s | 7z a -an -txz -bd -si -so > ${{ env.ASSET }}-l.xz
+            #dir /s \ | 7z a -an -txz -bd -si -so > ${{ env.ASSET }}-lR.xz
+            ls -lR   | 7z a -an -txz -bd -si -so > ${{ env.ASSET }}-l.xz
+            ls -lR ../../../ | 7z a -an -txz -bd -si -so > ${{ env.ASSET }}-lR.xz
+          else
+            ls -lR   | xz > ${{ env.ASSET }}-l.xz
+            ls -lR ../../../ | xz > ${{ env.ASSET }}-lR.xz
+          fi
+          # echo find asset: $staging*
+          # find . -name $staging*
+        fi
+#    - name: Upload release archive
+#      env:
+#        GH_TOKEN: ${{ github.token }}
+#      run: gh release upload ${{ needs.create-release.outputs.rg_version }} ${{ env.ASSET }} ${{ env.ASSET_SUM }}
+
+    - name: Publish Release
+      uses: deep-soft/action-gh-release@v1
+      with:
+        prerelease: true
+        tag_name: ${{ env.TAG_NAME }}
+        files: |
+          ${{ env.ASSET }}
+          ${{ env.ASSET_SRC }}
+          ${{ env.ASSET }}-l.xz
+          ${{ env.ASSET }}-lR.xz
+#           ${{ github.event.repository.name }}.zip
