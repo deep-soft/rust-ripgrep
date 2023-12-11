@@ -40,14 +40,15 @@ jobs:
       - name: Get version from Cargo.toml
         shell: bash
         run: |
-          VERSION=$(grep "version = " Cargo.toml | head -1 | awk '{ print $3}' | tr -d "\""  )
+          VERSION=v$(grep "version = " Cargo.toml | head -1 | awk '{ print $3}' | tr -d "\""  )
           echo "VERSION=$VERSION"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Create GitHub release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release create $VERSION --draft --verify-tag --title $VERSION
+        run: gh release create $VERSION --draft
+        #run: gh release create $VERSION --draft --verify-tag --title $VERSION
     outputs:
       version: ${{ env.VERSION }}
 
