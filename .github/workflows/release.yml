@@ -275,7 +275,7 @@ jobs:
       shell: bash
       run: |
         version="${{ needs.create-release.outputs.version }}"
-        gh release upload "$version" ${{ env.ASSET }} ${{ env.ASSET_SUM }}
+        gh release upload "$version" ${{ env.ASSET }} ${{ env.ASSET_SUM }} --clobber
 
   build-release-deb:
     name: build-release-deb
@@ -363,4 +363,4 @@ jobs:
       run: |
         cd "${{ env.DEB_DIR }}"
         version="${{ needs.create-release.outputs.version }}"
-        gh release upload "$version" "${{ env.DEB_NAME}}" "$SUM"
+        gh release upload "$version" "${{ env.DEB_NAME}}" "$SUM" --clobber
