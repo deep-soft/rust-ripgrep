@@ -351,9 +351,9 @@ jobs:
     - name: Create sha256 sum of deb file
       shell: bash
       run: |
-        cd "$DEB_DIR"
-        sum="$DEB_NAME.sha256"
-        shasum -a 256 "$DEB_NAME" > "$sum"
+        cd "${{ env.DEB_DIR }}"
+        sum="${{ env.DEB_NAME}}.sha256"
+        shasum -a 256 "${{ env.DEB_NAME}}" > "$sum"
         echo "SUM=$sum" >> $GITHUB_ENV
 
     - name: Upload release archive
@@ -361,6 +361,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       shell: bash
       run: |
-        cd "$DEB_DIR"
+        cd "${{ env.DEB_DIR }}"
         version="${{ needs.create-release.outputs.version }}"
-        gh release upload "$version" "$DEB_NAME" "$SUM"
+        gh release upload "$version" "${{ env.DEB_NAME}}" "$SUM"
