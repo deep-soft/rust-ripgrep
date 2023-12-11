@@ -55,7 +55,7 @@ jobs:
            gh release create ${{ env.VERSION }} --draft --title ${{ env.VERSION }};
          fi
     outputs:
-      version: ${{ env.VERSION }}
+      VERSION: ${{ env.VERSION }}
 
   build-release:
     name: build-release
@@ -200,8 +200,8 @@ jobs:
     - name: Determine archive name
       shell: bash
       run: |
-        version="${{ needs.create-release.outputs.version }}"
-        echo "ARCHIVE=ripgrep-$version-${{ matrix.target }}" >> $GITHUB_ENV
+        VERSION="${{ needs.create-release.outputs.VERSION }}"
+        echo "ARCHIVE=ripgrep-$VERSION-${{ matrix.target }}" >> $GITHUB_ENV
 
     - name: Creating directory for archive
       shell: bash
@@ -279,8 +279,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       shell: bash
       run: |
-        version="${{ needs.create-release.outputs.version }}"
-        gh release upload "${{ env.version }}" ${{ env.ASSET }} ${{ env.ASSET_SUM }} --clobber
+        VERSION="${{ needs.create-release.outputs.VERSION }}"
+        gh release upload $VERSION ${{ env.ASSET }} ${{ env.ASSET_SUM }} --clobber
 
   build-release-deb:
     name: build-release-deb
@@ -349,7 +349,7 @@ jobs:
       shell: bash
       run: |
         cargo deb --profile deb --target ${{ env.TARGET }}
-        version="${{ needs.create-release.outputs.version }}"
+        version="${{ needs.create-release.outputs.VERSION }}"
         version_tmp=${version#*v}
         version=$version_tmp
         echo "version=$version"
@@ -373,5 +373,5 @@ jobs:
       shell: bash
       run: |
         cd "${{ env.DEB_DIR }}"
-        version="${{ needs.create-release.outputs.version }}"
-        gh release upload "$version" "${{ env.DEB_NAME}}" "$SUM" --clobber
+        VERSION="${{ needs.create-release.outputs.VERSION }}"
+        gh release upload $VERSION "${{ env.DEB_NAME}}" "$SUM" --clobber
