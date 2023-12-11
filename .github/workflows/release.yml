@@ -40,7 +40,7 @@ jobs:
       - name: Get version from Cargo.toml
         shell: bash
         run: |
-          version=$(grep "version = " Cargo.toml | awk '{ print $3}' | tr /d "\"" )
+          version=$(grep "version = " Cargo.toml | head 1 | awk '{ print $3}' | tr /d "\"" )
           echo "VERSION=$version"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
