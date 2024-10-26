@@ -1,12 +1,12 @@
 name: ci
 on:
   workflow_dispatch:
-#  pull_request:
-#  push:
-#    branches:
-#    - master
-#  schedule:
-#  - cron: '00 01 * * *'
+  pull_request:
+  push:
+    branches:
+    - master
+  schedule:
+  - cron: '00 01 * * *'
 
 # The section is needed to drop write-all permissions that are granted on
 # `schedule` event. By specifying any permission explicitly all others are set
